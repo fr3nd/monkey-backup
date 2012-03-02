@@ -1,0 +1,9 @@
+#!/usr/bin/env /usr/bin/python
+# -*- coding: utf-8 -*-
+
+"""Multithreaded backup script"""
+
+import MonkeyBackup 
+
+if __name__ == '__main__':
+    MonkeyBackup.main()

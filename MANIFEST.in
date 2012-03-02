@@ -1,0 +1,7 @@
+include *.1.gz
+include *.txt
+include MANIFEST*
+include Makefile
+include INSTALL
+include *.ini
+include *.spec
