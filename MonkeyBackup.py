@@ -31,7 +31,7 @@ NONE     = 0
 LOG_ON_FILE = INFO
 LOG_ON_SCREEN = WARNING
 
-KEEPALIVE_SECONDS = 30
+KEEPALIVE_SECONDS = 60
 
 
 class PriorityQueue(Queue.Queue):
