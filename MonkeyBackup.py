@@ -31,6 +31,8 @@ NONE     = 0
 LOG_ON_FILE = INFO
 LOG_ON_SCREEN = WARNING
 
+KEEPALIVE_SECONDS = 60
+
 
 class PriorityQueue(Queue.Queue):
     def _init(self, maxsize):
@@ -102,6 +104,7 @@ class SshConnection(object):
             private_key_file = os.path.expanduser(private_key)
             rsa_key = paramiko.RSAKey.from_private_key_file(private_key_file)
             self._transport.connect(username = username, pkey = rsa_key)
+        self._transport.set_keepalive(KEEPALIVE_SECONDS)
     
     def _sftp_connect(self):
         """Establish the SFTP connection."""
