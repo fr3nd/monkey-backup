@@ -296,6 +296,7 @@ class BackupCommand(Backup):
     def run(self):
         command = self.server.config.get("command", "command")
         if command:
+            command = command.replace("%server%",self.server.servername) 
             self.server.logger.info("Running custom command...")
             self.server.logger.debug("Running command \"" + command + "\"...")
             args=command.split()
