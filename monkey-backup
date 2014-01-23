@@ -3,7 +3,7 @@
 
 """Multithreaded backup script"""
 
-import MonkeyBackup 
+import MonkeyBackup
 
 if __name__ == '__main__':
     MonkeyBackup.main()

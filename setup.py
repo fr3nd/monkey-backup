@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 from distutils.core import setup
-import MonkeyBackup 
+import MonkeyBackup
 
 modules=['MonkeyBackup']
 scripts=['monkey-backup']

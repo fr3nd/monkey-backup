@@ -1,5 +1,5 @@
 """
-Multithreaded modular backup script 
+Multithreaded modular backup script
 """
 
 import Queue
@@ -63,9 +63,9 @@ class PriorityQueue(Queue.Queue):
         return item
 
 class SshConnection(object):
-    """Connects and logs into the specified hostname. 
+    """Connects and logs into the specified hostname.
     Arguments that are not given are guessed from the environment.
-    Taken from http://commandline.org.uk/python/sftp-python-really-simple-ssh/""" 
+    Taken from http://commandline.org.uk/python/sftp-python-really-simple-ssh/"""
 
     def __init__(self,
                  host,
@@ -105,7 +105,7 @@ class SshConnection(object):
             rsa_key = paramiko.RSAKey.from_private_key_file(private_key_file)
             self._transport.connect(username = username, pkey = rsa_key)
         self._transport.set_keepalive(KEEPALIVE_SECONDS)
-    
+
     def _sftp_connect(self):
         """Establish the SFTP connection."""
         if not self._sftp_live:
@@ -170,7 +170,7 @@ class Logger:
                     break
                 self.parent.file.write(self.parent.format(item[0] + "\n", item[1], self.parent.tag))
                 self.parent.file.flush()
-    
+
     def __init__(self, file, prefix="", tag=None, log_on_screen=LOG_ON_SCREEN, log_on_file=LOG_ON_FILE):
         """Initialize the logs"""
         self.file = open(os.path.dirname(file) + "/" + time.strftime(prefix) + os.path.basename(file),'a')
@@ -186,9 +186,9 @@ class Logger:
             print self.format(message, level, self.tag)
         if level <= LOG_ON_FILE:
             self.__queue.put((message, level))
-    
+
     def format(self, message, level, tag):
-        """Format the log message putting date and loglevel""" 
+        """Format the log message putting date and loglevel"""
         if level == 1:
             strlevel = "CRITICAL"
         elif level == 2:
@@ -201,20 +201,20 @@ class Logger:
             return time.strftime("%Y%m%d %H:%M:%S", time.localtime()) + " - " + strlevel + " - " + tag + " - " + message
         else:
             return time.strftime("%Y%m%d %H:%M:%S", time.localtime()) + " - " + strlevel + " - " + message
-            
-    
+
+
     def debug(self, message):
         """log a debug message"""
         self.log(message, DEBUG)
-    
+
     def info(self, message):
         """log an info message"""
         self.log(message, INFO)
-    
+
     def warning(self, message):
         """log a warning message"""
         self.log(message, WARNING)
-    
+
     def critical(self, message):
         """log a critical message"""
         self.log(message, CRITICAL)
@@ -242,7 +242,7 @@ class Server:
                 self.backups.append(BackupRdiffBackup(self))
             elif backup == "command":
                 self.backups.append(BackupCommand(self))
-    
+
     def run_backups(self):
         """Run all the backups defined in the config file"""
         for backup in self.backups:
@@ -256,10 +256,10 @@ class Server:
                 self.logger.critical("Cleaning of old files failed: " + self.getName() + " failed: " + str(sys.exc_info()[0]) + " " + str(sys.exc_info()[1]))
         # everything has been done, so we close the log file
         self.logger.close()
-            
+
     def __str__(self):
         return self.servername
-    
+
 class Backup:
     """Parent class for doing any backup. Should not be used. Just override it"""
     def __init__(self, server):
@@ -267,15 +267,15 @@ class Backup:
     def run(self):
         """Method to run the backups."""
         pass
-    
+
     def clean(self):
         """Method to clean old backups."""
         pass
-    
+
 class BackupMySQL(Backup):
     def __init__(self, server):
         Backup.__init__(self, server)
-        
+
     def run(self):
         self.server.logger.info("Opening ssh connection to execute mysql-backup.sh ...")
         try:
@@ -283,11 +283,11 @@ class BackupMySQL(Backup):
             output = s.execute("true") # run a dumb command to get the output. It has no effect because the command is set in the authorized_keys file
         except:
            self.server.logger.critical("Error running ssh: "+ str(sys.exc_info()[0]) + " " + str(sys.exc_info()[1]))
-        if len(output)>0: 
+        if len(output)>0:
             self.server.logger.warning("Output: " + str(output))
         else:
             self.server.logger.info("mysqldump finished...")
-        
+
         self.server.logger.debug("Closing ssh connection...")
         s.close()
 
@@ -296,7 +296,7 @@ class BackupCommand(Backup):
     def run(self):
         command = self.server.config.get("command", "command")
         if command:
-            command = command.replace("%server%",self.server.servername) 
+            command = command.replace("%server%",self.server.servername)
             self.server.logger.info("Running custom command...")
             self.server.logger.debug("Running command \"" + command + "\"...")
             args=command.split()
@@ -319,10 +319,10 @@ class BackupRdiffBackup(Backup):
         # check if destination directory exists and create it otherwise
         if not os.path.exists(self.server.dir + "/rdiff-backup"):
             os.makedirs(self.server.dir + "/rdiff-backup")
-        
+
         args=[]
         args.append("/usr/bin/rdiff-backup")
-        
+
         for file in self.server.config.get("global-include-file", "rdiff-backup").replace(" ","").split(",") + self.server.config.get("include-file", "rdiff-backup").replace(" ","").split(","):
             if file:
                 if os.path.exists(file.replace("%server%",self.server.servername)):
@@ -339,7 +339,7 @@ class BackupRdiffBackup(Backup):
         args.append(self.server.dir + "/rdiff-backup")
         self.server.logger.info("Running rdiff-backup...")
         self.server.logger.debug("Running " + " ".join(args))
-        process = subprocess.Popen(args, stdout=subprocess.PIPE, stderr=subprocess.PIPE) 
+        process = subprocess.Popen(args, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         output = process.communicate()
         if process.returncode == 0:
             self.server.logger.info("rdiff-backup completed successfully")
@@ -347,7 +347,7 @@ class BackupRdiffBackup(Backup):
         else:
             self.server.logger.critical("There was an error running rdiff-backup: errorcode " + str(process.returncode))
             self.server.logger.critical("stdout: " + output[0] + ", stderr: " + output[1])
-    
+
     def clean(self):
         # Delete old logs
         args=[]
@@ -358,7 +358,7 @@ class BackupRdiffBackup(Backup):
         args.append(self.server.dir + "/rdiff-backup")
         self.server.logger.info("Cleaning old rdiff-backup backups...")
         self.server.logger.debug("Running " + " ".join(args))
-        process = subprocess.Popen(args, stdout=subprocess.PIPE, stderr=subprocess.PIPE) 
+        process = subprocess.Popen(args, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         output = process.communicate()
         if process.returncode == 0:
             self.server.logger.info("Old rdiff-backup backups successfully deleted")
@@ -375,7 +375,7 @@ class BackupMonkey:
             self.__queue = queue
             Thread.__init__(self)
             self.setName(name)
-            
+
         def run(self):
             while 1:
                 item = self.__queue.get()
@@ -388,55 +388,55 @@ class BackupMonkey:
                 else:
                     item.logger.close()
                 self.logger.info("monkey-" + self.getName() + " - finished running " + item.servername + " backup")
-    
+
     def __init__(self, num_workers=4, logger=None, dry=False):
         self.__queue = PriorityQueue()
         self.__num_workers = num_workers
         self.dry = dry
         self.threads=[]
         self.logger = logger
-    
+
     def start(self):
         """Start all the monkeys (threads)"""
         for i in range(self.__num_workers):
             self.logger.info("monkey-" + str(i) + " - thread started...")
             self.threads.append(self.Worker(self.__queue, str(i), self.logger, self.dry))
             self.threads[i].start()
-    
+
     def get_num_monkeys(self):
         """Return the number of monkeys (threads)"""
         return self.__num_workers
-    
+
     def enqueue(self, item, priority):
         """Enqueue server to be processed by any monkey (thread)"""
         self.__queue.put(item, priority)
-    
+
     def wait(self):
         """Wait for all the monkeys (threads) to finish"""
         for thread in self.threads:
             thread.join()
-            
+
 class Config:
     """Wrapper to ConfigParser"""
     def __init__(self, file, verbose=False):
         self.verbose = verbose
         self.__read(file)
-        
+
     def __read(self, file):
         self.config = ConfigParser.ConfigParser()
         f = open(file)
         self.config.readfp(f)
         f.close()
-    
+
     def override_with(self, file):
         self.config2 = ConfigParser.ConfigParser()
         f = open(file)
         self.config2.readfp(f)
         f.close
-    
+
     def get(self, option, section="default"):
         """Get the value for an option in a specific section"""
-        try: 
+        try:
             return self.config2.get(section, option)
         except:
             try:
@@ -445,8 +445,8 @@ class Config:
                 return None
 
 def main():
-    global LOG_ON_FILE 
-    global LOG_ON_SCREEN 
+    global LOG_ON_FILE
+    global LOG_ON_SCREEN
 
     usage="%prog [options] config_file.ini"
     parser = OptionParser(usage, version=__version__)
@@ -456,10 +456,10 @@ def main():
     parser.add_option("-n", "--dry", action="store_true", dest="dry", default=False, help="Enable dry mode. Will not do anything, just show it on the terminal")
 
     (options, args) = parser.parse_args()
-    
+
     if len(args) < 1:
         parser.error("Config file should be specified")
-    
+
     # Set the debug levels
     if options.dry:
         LOG_ON_FILE   = NONE
@@ -469,7 +469,7 @@ def main():
         LOG_ON_SCREEN = DEBUG
     elif options.verbose > LOG_ON_SCREEN:
         LOG_ON_SCREEN = options.verbose
-    
+
     # Read the config file
     try:
         config = Config(file=args[0], verbose = options.verbose)
@@ -477,11 +477,11 @@ def main():
         parser.error("Could not open config file.")
     except ConfigParser.NoOptionError:
         parser.error("Config file not complete.")
-        
+
     mainlogger = Logger(config.get("logdir") + "/" + "monkey-backup.log", prefix=config.get("lognameprefix"))
     mainlogger.info("main - Backup started.")
     backup_monkey = BackupMonkey(num_workers=int(config.get("threads")), logger=mainlogger, dry=options.dry)
-    
+
     if options.server:
         servers_to_backup=options.server
     else:
@@ -501,9 +501,9 @@ def main():
     backup_monkey.start()
     for i in range(backup_monkey.get_num_monkeys()):
         backup_monkey.enqueue(None, 999999)
-    
+
     # wait until all the backups have finished
     backup_monkey.wait()
-    
+
     mainlogger.info("main - Backup finished.")
     mainlogger.close()
