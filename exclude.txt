@@ -80,3 +80,5 @@
 /var/named/chroot/var/log/named/*
 /var/spool/postfix/*/**
 /var/tmp/**
+/var/lib/docker/**
+/var/run/docker/**
